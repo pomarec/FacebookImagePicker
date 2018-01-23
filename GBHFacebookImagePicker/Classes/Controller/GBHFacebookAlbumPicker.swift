@@ -31,6 +31,9 @@ class GBHFacebookAlbumPicker: UITableViewController {
 
     /// Loading indicator 
     fileprivate var indicator = UIActivityIndicatorView() // Loading indicator
+    
+    // No album label
+    fileprivate var noAlbumLabel = UILabel()
 
     /// Array which contains all the album of the facebook account
     fileprivate var albums: [GBHFacebookAlbum] = [] { // Albums list
@@ -38,6 +41,7 @@ class GBHFacebookAlbumPicker: UITableViewController {
             // Reload table data
             DispatchQueue.main.async {
                 self.tableView.reloadData()
+                self.noAlbumLabel.isHidden = self.albums.count > 0
             }
         }
     }
@@ -51,6 +55,7 @@ class GBHFacebookAlbumPicker: UITableViewController {
         self.prepareTableView()
         self.prepareObserver()
         self.prepareActivityIndicator()
+        self.prepareNoAlbumLabel()
 
         // Start Facebook login
         self.doFacebookLogin()
@@ -86,6 +91,17 @@ class GBHFacebookAlbumPicker: UITableViewController {
                                                selector: #selector(self.didReceiveAlbum),
                                                name: Notification.Name.ImagePickerDidRetrieveAlbum,
                                                object: nil)
+    }
+    
+    fileprivate func prepareNoAlbumLabel() {
+        self.noAlbumLabel.font = UIFont(name: "SourceSansPro-Regular", size: 15)
+        self.noAlbumLabel.textColor = UIColor(red: 95.0 / 255.0, green: 89.0 / 255.0, blue: 128.0 / 255.0, alpha: 1.0)
+        self.noAlbumLabel.numberOfLines = 0
+        self.noAlbumLabel.textAlignment = .center
+        self.noAlbumLabel.text = NSLocalizedString("facebook_picture_mandatory", comment: "")
+        self.noAlbumLabel.frame = CGRect(x: 20, y: 10, width: self.view.frame.size.width - 40, height: 200)
+        self.noAlbumLabel.isHidden = true
+        self.view.addSubview(self.noAlbumLabel)
     }
 
     // MARK: - Loading indicator
@@ -315,3 +331,4 @@ extension GBHFacebookAlbumPicker: GBHAlbumPickerTableViewControllerDelegate {
         }
     }
 }
+
