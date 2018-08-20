@@ -20,17 +20,7 @@ final class GBHAlbumTableViewCell: UITableViewCell {
     /// Height of the album's cover 
     fileprivate let imageHeight = 70
 
-    // MARK: - Reuse 
-
-    /// Override prepare for reuse 
-    override func prepareForReuse() {
-        super.prepareForReuse()
-
-        // Set default image
-        self.photoImageView?.image = GBHAssetManager.getImage(name: "GBHFacebookImagePickerDefaultImageLoading")
-    }
-
-    // MARK: - Init
+    // MARK: - Lifecycle
 
     /// Initialize the cell
     ///
@@ -57,14 +47,26 @@ final class GBHAlbumTableViewCell: UITableViewCell {
             self.contentView.addSubview(imgView)
         }
 
-        // Label
+        // Album title label 
+        self.textLabel?.font = UIFont.boldSystemFont(ofSize: 16)
         self.textLabel?.textColor = GBHFacebookImagePicker.pickerConfig.uiConfig.albumsTitleColor ?? .black
-        self.detailTextLabel?.textColor = GBHFacebookImagePicker.pickerConfig.uiConfig.albumsCountColor ?? .black
+
+        // Photo count label 
+        let defaultColor = UIColor.lightGray
+        self.detailTextLabel?.textColor = GBHFacebookImagePicker.pickerConfig.uiConfig.albumsCountColor ?? defaultColor
     }
 
     /// Required for deserialization
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+    }
+
+    /// Overriding prepare for reuse 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        // Set default image
+        self.photoImageView?.image = GBHAssetManager.getImage(name: GBHAssetImage.loader)
     }
 
     /// Define the layout of the album name label and number of picture label
@@ -105,12 +107,14 @@ final class GBHAlbumTableViewCell: UITableViewCell {
 
         // Album cover image
         if album.albumId == GBHFacebookManager.idTaggedPhotosAlbum {
+            // Special cover for tagged album : user facebook account picture 
             GBHFacebookManager.shared.getProfilePicture({ (_, url) in
                 if let stringUrl = url, let url = URL(string: stringUrl) {
                     self.photoImageView?.imageUrl = url
                 }
             })
         } else if let url = album.coverUrl {
+            // Regular album, load the album cover from de Graph API url 
             self.photoImageView?.imageUrl = url
         }
     }

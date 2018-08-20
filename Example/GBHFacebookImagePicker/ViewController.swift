@@ -61,7 +61,7 @@ class ViewController: UIViewController {
 
     fileprivate func someCustomisation() {
         // Navigation bar title 
-        GBHFacebookImagePicker.pickerConfig.title = "MyCustomTitle"
+        GBHFacebookImagePicker.pickerConfig.textConfig.localizedTitle = "MyCustomTitle"
 
         // Navigation barTintColor
         GBHFacebookImagePicker.pickerConfig.uiConfig.navBarTintColor = UIColor.red
@@ -84,38 +84,54 @@ class ViewController: UIViewController {
         // Album's count color 
         GBHFacebookImagePicker.pickerConfig.uiConfig.albumsCountColor = UIColor.white
 
-        // Selected border color 
-        GBHFacebookImagePicker.pickerConfig.uiConfig.selectedBorderColor = UIColor.red
-
-        // Selected border width 
-        GBHFacebookImagePicker.pickerConfig.uiConfig.selectedBorderWidth = 4.0
-
         // Maximum selected pictures 
         GBHFacebookImagePicker.pickerConfig.maximumSelectedPictures = 4
 
         // Display tagged album 
-        GBHFacebookImagePicker.pickerConfig.taggedAlbumName = "Tagged photos"
+        GBHFacebookImagePicker.pickerConfig.textConfig.localizedTaggedAlbumName = "Tagged photos"
 
         // Tagged album name
         GBHFacebookImagePicker.pickerConfig.displayTaggedAlbum = true
+
+        // Number of picture per row (4 by default)
+        GBHFacebookImagePicker.pickerConfig.picturePerRow = 3
+
+        // Space beetween album photo cell (1.5 by default)
+        GBHFacebookImagePicker.pickerConfig.cellSpacing = 2.0
+
+        // Perform animation on picture tap (true by default)
+        GBHFacebookImagePicker.pickerConfig.performTapAnimation = true
+
+        // Show check style with image and layer (true by default)
+        GBHFacebookImagePicker.pickerConfig.uiConfig.showCheckView = true
+
+        // Change checkview background color
+        GBHFacebookImagePicker.pickerConfig.uiConfig.checkViewBackgroundColor = UIColor.red
+
+        // Preview photos size (normal by default)
+        GBHFacebookImagePicker.pickerConfig.uiConfig.previewPhotoSize = .full
+
+        // Show the "Select all" button 
+        GBHFacebookImagePicker.pickerConfig.allowAllSelection = true
     }
 
     // MARK: - Action
 
-    func showAlbumClick() {
+    @objc func showAlbumClick() {
         print(self, #function)
 
         // Init picker 
         let picker = GBHFacebookImagePicker()
 
         // Allow multiple selection (false by default)
-//        GBHFacebookImagePicker.pickerConfig.allowMultipleSelection = true
-//        GBHFacebookImagePicker.pickerConfig.maximumSelectedPictures = 20
-//        GBHFacebookImagePicker.pickerConfig.taggedAlbumName = "Tagged photos"
+        GBHFacebookImagePicker.pickerConfig.allowMultipleSelection = true
+        GBHFacebookImagePicker.pickerConfig.uiConfig.previewPhotoSize = .full
+        GBHFacebookImagePicker.pickerConfig.allowAllSelection = true
+        GBHFacebookImagePicker.pickerConfig.picturePerRow = 3
         GBHFacebookImagePicker.pickerConfig.displayTaggedAlbum = true
 
         // Make some customisation
-        // self.someCustomisation()
+        //self.someCustomisation()
 
         // Present picker 
         picker.presentFacebookAlbumImagePicker(from: self,

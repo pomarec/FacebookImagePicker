@@ -18,11 +18,9 @@
 </p>
 
 GBHFacebookImagePicker is ***Facebook's*** album photo picker written in Swift, built to provide a simple way to pick picture into Facebook account. The picker provides a simple interface like the native iOS photo picker. 
-This picker takes care of all authentication (from the web or with the native Facebook app) when necessary. It the photo's permission isn't accepted during the login, the picker prompts another permission's request. 
+This picker takes care of all authentication (from the web or with the native Facebook app) when necessary. If the photo's permission isn't accepted during the login, the picker prompts another permission's request.
 
 ## Screenshot / Demo
-
-Video demonstration -> https://vimeo.com/192823627
 
 ![Preview](https://github.com/terflogag/FacebookImagePicker/blob/master/Ressources/preview.png)
 
@@ -33,12 +31,14 @@ Video demonstration -> https://vimeo.com/192823627
 - [x] Handling denied Facebook photo's permission 
 - [x] Select and get URL/Image of the selected pictures 
 - [x] UI Customization 
-- [x] AppStore ready
-- [x] Swift 3 
 - [x] iPhone/iPad support 
 - [x] Multiple selection in one album
-- [ ] MVC to MVVM (feel free to make PR)
-- [ ] Unit & UI Test (feel free to make PR)
+- [x] Select all 
+
+## TODOs
+
+- [  ] Use Anchor for layout (make the layout code cleaner and readable)
+- [  ] UI & Unit tests
 
 ## Example
 
@@ -50,7 +50,7 @@ pod try GBHFacebookImagePicker
 
 Or to run the example project manually, clone the repo, and run `pod install` from the Example directory first.
 
-Don't forgot to replace the current Facebook App's ID with your own in the plist file (Open as > Source code). 
+Don't forget to replace the current Facebook App's ID with your own in the plist file (Open as > Source code). 
 Like this :
 
 ```xml
@@ -131,51 +131,7 @@ picker.presentFacebookAlbumImagePicker(from: self, delegate: self)
 
 ## Customisation
 
-You can apply some customisation. To do it you can use the GBHFacebookPickerConfig structure like this :
-
-```swift
-// Multiple selection settings 
-GBHFacebookImagePicker.pickerConfig.allowMultipleSelection = true // False by default  
-
-// Navigation bar title 
-GBHFacebookImagePicker.pickerConfig.title = "MyCustomTitle"
-
-// Navigation barTintColor
-GBHFacebookImagePicker.pickerConfig.uiConfig.navBarTintColor = UIColor.red
-
-// Close button color 
-GBHFacebookImagePicker.pickerConfig.uiConfig.closeButtonColor = UIColor.white
-
-// Global backgroundColor 
-GBHFacebookImagePicker.pickerConfig.uiConfig.backgroundColor = UIColor.red
-
-// Navigation bar title color
-GBHFacebookImagePicker.pickerConfig.uiConfig.navTitleColor = UIColor.white
-
-// Navigation bar tintColor
-GBHFacebookImagePicker.pickerConfig.uiConfig.navTintColor = UIColor.white
-
-// Album's name color 
-GBHFacebookImagePicker.pickerConfig.uiConfig.albumsTitleColor = UIColor.white
-
-// Album's count color 
-GBHFacebookImagePicker.pickerConfig.uiConfig.albumsCountColor = UIColor.white
-
-// Selected border color 
-GBHFacebookImagePicker.pickerConfig.uiConfig.selectedBorderColor = UIColor.red
-
-// Selected border width 
-GBHFacebookImagePicker.pickerConfig.uiConfig.selectedBorderWidth = 4.0
-
-// Maximum selected pictures 
-GBHFacebookImagePicker.pickerConfig.maximumSelectedPictures = 4
-
-// Display tagged album 
-GBHFacebookImagePicker.pickerConfig.taggedAlbumName = "Tagged photos"
-
-// Tagged album name
-GBHFacebookImagePicker.pickerConfig.displayTaggedAlbum = true
-```
+You can apply some customisation. To do it you can use the [GBHFacebookPickerConfig structure](CUSTOMISATION.md). 
 
 ## Aditionals informations 
 
@@ -183,7 +139,7 @@ GBHFacebookImagePicker.pickerConfig.displayTaggedAlbum = true
 
 ## Translation 
 
-GBHFacebookImagePicker is currently write in english. If you need translation for the permission popup (or whatever thing), just add this line in your localized file  :
+GBHFacebookImagePicker is currently written in english. If you need translation for the permission popup (or whatever thing), just add this line in your localized file  :
 
 ```
 "Pictures" = "<your_translation>";
@@ -193,15 +149,16 @@ GBHFacebookImagePicker is currently write in english. If you need translation fo
 "Close" = "<your_translation>";
 "Album(s)" = "<your_translation>";
 "Photos of You" = "<your_translation>";
+""No picture(s) in this album." = "<your_translation>";"
 ```
 
 ## Requirements
 
-* Xcode 8 
+* Xcode 9
 * iOS 9.0+ target deployment
 * FBSDKCoreKit, FBSDKLoginKit (>= 4.0)
 * Facebook Application, see [usage](#usage) for explaination 
-* Swift 3 project 
+* Swift 3 or Swift 4 project
 
 ## Installation
 
@@ -209,7 +166,9 @@ GBHFacebookImagePicker is available through [CocoaPods](http://cocoapods.org). T
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod "GBHFacebookImagePicker"
+pod "GBHFacebookImagePicker", '~> 2.4'
+
+pod "GBHFacebookImagePicker", '~> 1.3.1' # For Swift 3.1
 ```
 
 ## Alternative solutions
@@ -227,17 +186,9 @@ Here are some other Facebook's album picker libraries.
 - If you **have a feature request**, open an issue.
 - If you **want to contribute**, submit a pull request and **read** the [contributing file](CONTRIBUTING.md).
 
-## Applications
-
-Some applications already use this picker like :
-- [Troll Generator](https://itunes.apple.com/fr/app/troll-generator/id1038097542?mt=8)
-- [Giraf](https://itunes.apple.com/fr/app/giraf/id1136592561?mt=8)
-
-What about yours ? If your application also use this picker, feel free to contact me or make pull request on the README 😁
-
 ## Author
 
-Florian Gabach, contact@floriangabach.fr
+Florian Gabach, florian.gabach@gmail.com
 
 Inspired by [OceanLabs/FacebookImagePicker-iOS](https://github.com/OceanLabs/FacebookImagePicker-iOS) (Objective-C)
 

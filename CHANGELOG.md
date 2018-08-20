@@ -1,6 +1,65 @@
 Changelog
 ==========
 
+### 2.4.0
+
+- Add "all selection" feature 
+- Moving action button to a toolbar 
+- Bump to FBSDK 4.34
+- Texts configuration refactoring 
+- Layout : refactoring with anchor (to be continue)
+
+Some breaking change can occur with the text localization. 
+
+### 2.3.2
+
+- Bump to FBSDK 4.32
+
+### 2.3.1
+
+- Bump FBSDK to 4.31
+- Improve image multiple selection download 
+
+### 2.3.0
+
+- Bump FBSDK to 4.30
+- More customisation with `previewPhotoSize` 
+
+### 2.2.1
+
+- Bump FBSDK to 4.29
+
+### 2.2.0
+
+- Add `checkViewBackgroundColor` configuration
+- Allow  `selectedBorderWidth` & `selectedBorderColor` configuration
+
+### 2.1.0
+
+- Add selection animation 
+- Mode customisation with `showCheckView` and `performTapAnimation`
+- Bump FBSDK to 4.28
+
+### 2.0.2
+
+- Bump FBSDK to 4.27.1
+- Clean 
+
+### 2.0.1
+
+- Fix simple selection loading
+
+### 2.0
+
+- Swift 4 
+- Handle empty album and display placeholder message 
+- Add some configuration options
+- Update UI for albums and pictures 
+- Update UI for pictures selection
+- Deprecated `selectedBorderWidth` & `selectedBorderColor` configuration
+- Add cache system for image loading 
+- Fix some bugs...
+
 ### 1.3.1
 
 - Bump FBSDK from v4.24 to v4.26

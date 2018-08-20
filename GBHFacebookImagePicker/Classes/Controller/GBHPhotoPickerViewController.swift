@@ -11,14 +11,26 @@ class GBHPhotoPickerViewController: UIViewController {
 
     /// MARK: Var
 
-    /// Loading indicator 
-    fileprivate var indicator = UIActivityIndicatorView()
+    /// Status bar
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return GBHFacebookImagePicker.pickerConfig.uiConfig.statusbarStyle
+    }
 
     /// Cell identifier 
     fileprivate let reuseIdentifier = "Cell"
 
-    /// The collection view where are display the pictures 
-    fileprivate var pictureCollection: UICollectionView? // Collection for display album's pictures
+    /// Cell size 
+    fileprivate var cellSize: CGFloat?
+
+    /// Number of cell for each row 
+    fileprivate let cellPerRow: CGFloat = GBHFacebookImagePicker.pickerConfig.picturePerRow
+
+    /// Spacing beetween cell 
+    fileprivate let cellSpacing: CGFloat = GBHFacebookImagePicker.pickerConfig.cellSpacing
+
+    fileprivate var shouldDisplayToolbar: Bool {
+        return (self.album?.photos.count ?? 0 > 0) && GBHFacebookImagePicker.pickerConfig.shouldDisplayToolbar
+    }
 
     /// Array which contain image model of pictures which are in the album
     fileprivate var imageArray: [GBHFacebookImage] = [] {
@@ -29,6 +41,9 @@ class GBHPhotoPickerViewController: UIViewController {
             }
         }
     }
+
+    /// Did already load album 
+    fileprivate var alreadyLoaded: Bool = false
 
     /// Album picker controller delegate 
     weak var albumPictureDelegate: GBHAlbumPickerTableViewControllerDelegate?
@@ -44,30 +59,77 @@ class GBHPhotoPickerViewController: UIViewController {
 
             // Manage disable/enable state 
             if count > 0 {
-                self.selectBarButton?.isEnabled = true
+                self.selectBarButton.isEnabled = true
             } else {
-                self.selectBarButton?.isEnabled = false
+                self.selectBarButton.isEnabled = false
             }
 
-            // Update button title 
-            self.selectBarButton?.title = "Select\(count > 0 ? " (\(count))" : "")"
+            // Update button title
+            let text = GBHFacebookImagePicker.pickerConfig.textConfig.localizedSelect
+            self.selectBarButton.title = "\(text)\(count > 0 ? " (\(count))" : "")"
         }
     }
 
-    //
-    fileprivate(set) var selectBarButton: UIBarButtonItem?
+    fileprivate lazy var selectBarButton: UIBarButtonItem = {
+        let selectBarButton = UIBarButtonItem(
+            title: GBHFacebookImagePicker.pickerConfig.textConfig.localizedSelect,
+            style: .plain,
+            target: self,
+            action: #selector(actionSelectBarButton(sender:))
+        )
+        selectBarButton.isEnabled = false
+        return selectBarButton
+    }()
+
+    fileprivate lazy var selectAllBarButton: UIBarButtonItem = {
+        let selectAllBarButton = UIBarButtonItem(
+            title: GBHFacebookImagePicker.pickerConfig.textConfig.localizedSelectAll,
+            style: .plain,
+            target: self,
+            action: #selector(didSelectAllPicture(sender:))
+        )
+        return selectAllBarButton
+    }()
+
+    fileprivate lazy var emptyLabel: UILabel = {
+        let emptyLabel = UILabel(frame: CGRect(x: 0,
+                                               y: 0,
+                                               width: self.pictureCollection?.frame.size.width ?? 0.0,
+                                               height: self.pictureCollection?.frame.size.height ?? 0.0))
+        emptyLabel.textAlignment = .center
+        emptyLabel.text = GBHFacebookImagePicker.pickerConfig.textConfig.localizedNoPicturesInAlbum
+        emptyLabel.font = UIFont.italicSystemFont(ofSize: 16)
+        emptyLabel.textColor = UIColor.lightGray
+        return emptyLabel
+    }()
+
+    fileprivate lazy var loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(frame: CGRect(x: 0,
+                                                               y: 0,
+                                                               width: 40,
+                                                               height: 40) )
+        indicator.hidesWhenStopped = true
+        indicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+        indicator.backgroundColor = UIColor.clear
+        indicator.color = UIColor.black
+        return indicator
+    }()
+
+    /// The collection view where are display the pictures
+    fileprivate var pictureCollection: UICollectionView? // Collection for display album's pictures
 
     // MARK: Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Prepare view
         self.prepareViewController()
-        self.prepareObserver()
-
-        // Fetch photos if empty
         self.getPhotos()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        self.navigationController?.setToolbarHidden(!shouldDisplayToolbar, animated: false)
     }
 
     // MARK: Prepare
@@ -80,36 +142,36 @@ class GBHPhotoPickerViewController: UIViewController {
                                                selector: #selector(self.didReceivePicture(_:)),
                                                name: Notification.Name.ImagePickerDidRetriveAlbumPicture,
                                                object: nil)
-
     }
 
     /// Prepare the UIViewController 
     fileprivate func prepareViewController() {
         // Title & Background
-        self.title = self.album?.name ?? NSLocalizedString("Pictures", comment: "")
+        self.title = self.album?.name ?? GBHFacebookImagePicker.pickerConfig.textConfig.localizedPictures
         self.view.backgroundColor = GBHFacebookImagePicker.pickerConfig.uiConfig.backgroundColor
 
-        // Prepare component 
-        self.prepareCollectionView()
-        self.prepareActivityIndicator()
         self.prepareMultipleSelectionButton()
+        self.prepareCollectionView()
+        self.prepareObserver()
 
         // Start loading 
         self.startLoading()
     }
 
     fileprivate func prepareMultipleSelectionButton() {
+        var items: [UIBarButtonItem] = [UIBarButtonItem.flexibleSpaceItem()]
+
         if GBHFacebookImagePicker.pickerConfig.allowMultipleSelection {
-            self.selectBarButton = UIBarButtonItem(
-                title: "Select",
-                style: .plain,
-                target: self,
-                action: #selector(actionSelectBarButton(sender:))
-            )
-            self.selectBarButton?.isEnabled = false
-            if let barButton = self.selectBarButton {
-                self.navigationItem.rightBarButtonItems = [barButton]
+            items.append(selectBarButton)
+
+            if GBHFacebookImagePicker.pickerConfig.allowAllSelection {
+                items.insert(selectAllBarButton, at: 0)
             }
+        }
+
+        if items.count > 1 {
+            self.toolbarItems = items
+            self.navigationController?.setToolbarHidden(!shouldDisplayToolbar, animated: false)
         }
     }
 
@@ -124,79 +186,25 @@ class GBHPhotoPickerViewController: UIViewController {
         self.pictureCollection?.dataSource = self
         self.pictureCollection?.allowsMultipleSelection = true
         self.pictureCollection?.backgroundColor = GBHFacebookImagePicker.pickerConfig.uiConfig.backgroundColor ?? .white
-        self.pictureCollection?.translatesAutoresizingMaskIntoConstraints = false
         if let collection = self.pictureCollection {
             self.view.addSubview(collection)
-            self.prepareCollectionViewConstraint()
+            self.view.pinEdges(to: collection)
         }
-    }
 
-    /// Set the collection view constraint 
-    fileprivate func prepareCollectionViewConstraint() {
-        // Top constraint
-        if let collection = self.pictureCollection {
-            // Top constraint 
-            self.view.addConstraint(NSLayoutConstraint(item: collection,
-                                                       attribute: NSLayoutAttribute.top,
-                                                       relatedBy: NSLayoutRelation.equal,
-                                                       toItem: self.view,
-                                                       attribute: NSLayoutAttribute.top,
-                                                       multiplier: 1,
-                                                       constant: 0))
-
-            // Bottom constraint
-            self.view.addConstraint(NSLayoutConstraint(item: collection,
-                                                       attribute: NSLayoutAttribute.bottom,
-                                                       relatedBy: NSLayoutRelation.equal,
-                                                       toItem: self.view,
-                                                       attribute: NSLayoutAttribute.bottom,
-                                                       multiplier: 1,
-                                                       constant: 0))
-
-            // Leading constraint
-            self.view.addConstraint(NSLayoutConstraint(item: collection,
-                                                       attribute: NSLayoutAttribute.leading,
-                                                       relatedBy: NSLayoutRelation.equal,
-                                                       toItem: self.view,
-                                                       attribute: NSLayoutAttribute.leading,
-                                                       multiplier: 1,
-                                                       constant: 0))
-
-            // Trainling constraint
-            self.view.addConstraint(NSLayoutConstraint(item: collection,
-                                                       attribute: NSLayoutAttribute.trailing,
-                                                       relatedBy: NSLayoutRelation.equal,
-                                                       toItem: self.view,
-                                                       attribute: NSLayoutAttribute.trailing,
-                                                       multiplier: 1,
-                                                       constant: 0))
+        // Define cell size
+        if let collectionWidth = self.pictureCollection?.frame.width {
+            self.cellSize = (collectionWidth - (self.cellSpacing * (self.cellPerRow + 1.0))) / self.cellPerRow
         }
     }
 
     // MARK: - Loading indicator
 
-    /// Prepare UIActivityIndicatorView and display it at the center of the view
-    fileprivate func prepareActivityIndicator() {
-        self.indicator = UIActivityIndicatorView(frame:CGRect(x: 0,
-                                                              y: 0,
-                                                              width: 40,
-                                                              height: 40) )
-        self.indicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
-        self.indicator.center = self.view.center
-        self.view.addSubview(indicator)
-    }
-
-    /// Start loading : start the loader animation 
     fileprivate func startLoading() {
-        self.indicator.startAnimating()
-        self.indicator.backgroundColor = UIColor.clear
-        self.indicator.color = UIColor.black
+        self.loadingIndicator.startAnimating()
     }
 
-    /// Stop loading : stop and hide the loader
     fileprivate func stopLoading() {
-        self.indicator.hidesWhenStopped = true
-        self.indicator.stopAnimating()
+        self.loadingIndicator.stopAnimating()
     }
 
     // MARK: - Action
@@ -213,6 +221,8 @@ class GBHPhotoPickerViewController: UIViewController {
                     self.albumPictureDelegate?.didFailSelectPictureInAlbum(error: nil)
                 }
             } else {
+                self.navigationController?.setToolbarHidden(!shouldDisplayToolbar,
+                                                            animated: true)
                 self.stopLoading()
             }
         }
@@ -220,20 +230,39 @@ class GBHPhotoPickerViewController: UIViewController {
 
     /// Did finish get album's pictures callback
     @objc fileprivate func didReceivePicture(_ sender: Notification) {
+        // Update UI 
         self.stopLoading()
+
+        // Update flag 
+        self.alreadyLoaded = true
+
+        // Set album's picture 
         if let album = sender.object as? GBHFacebookAlbum,
             self.album?.albumId == album.albumId {
             self.imageArray = album.photos
+            self.navigationController?.setToolbarHidden(!shouldDisplayToolbar,
+                                                        animated: true)
         }
     }
 
-    func actionSelectBarButton(sender: UIBarButtonItem) {
+    @objc func actionSelectBarButton(sender: UIBarButtonItem) {
         // Clean collection and start loading
-        self.imageArray = []
-        self.startLoading()
+        self.cleanController()
 
         // Send to album delegate for download
         self.albumPictureDelegate?.didSelecPicturesInAlbum(imageModels: self.selectedImages)
+    }
+
+    @objc func didSelectAllPicture(sender: UIBarButtonItem) {
+        self.pictureCollection?.selectAllCell()
+        self.selectedImages = self.imageArray.map({$0})
+    }
+
+    fileprivate func cleanController() {
+        // Clean collection and start loading
+        self.alreadyLoaded = false
+        self.imageArray = []
+        self.startLoading()
     }
 }
 
@@ -242,6 +271,21 @@ extension GBHPhotoPickerViewController: UICollectionViewDataSource, UICollection
     // MARK: UICollectionViewDelegate & UICollectionViewDataSource
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
+        if imageArray.count <= 0, self.alreadyLoaded {
+            // No picture in this album, add empty placeholder 
+            // Should happen only for tagged album, when we can't have the album's picture count
+            self.pictureCollection?.backgroundView = emptyLabel
+            return 0
+        }
+
+        if alreadyLoaded == false {
+            // Display loader
+            self.pictureCollection?.backgroundView = self.loadingIndicator
+        } else {
+            // Display photos
+            self.pictureCollection?.backgroundView = nil
+        }
+
         return 1
     }
 
@@ -256,11 +300,20 @@ extension GBHPhotoPickerViewController: UICollectionViewDataSource, UICollection
         let imageModel = self.imageArray[indexPath.row]
 
         if GBHFacebookImagePicker.pickerConfig.allowMultipleSelection {
+            // Multiple selection mode 
             self.selectedImages.append(imageModel)
         } else {
+            // Clean collection and start loading
+            self.cleanController()
+
             // Single selection mode  
             // Send to album delegate for download
             self.albumPictureDelegate?.didSelecPicturesInAlbum(imageModels: [imageModel])
+        }
+
+        if GBHFacebookImagePicker.pickerConfig.performTapAnimation,
+            let cell = collectionView.cellForItem(at: indexPath) as? GBHPhotoCollectionViewCell {
+            cell.tapAnimation()
         }
     }
 
@@ -269,6 +322,11 @@ extension GBHPhotoPickerViewController: UICollectionViewDataSource, UICollection
         let imageModel = self.imageArray[indexPath.row]
         if let index = self.selectedImages.index(where: { $0.imageId == imageModel.imageId }) {
             self.selectedImages.remove(at: index)
+        }
+
+        if GBHFacebookImagePicker.pickerConfig.performTapAnimation,
+            let cell = collectionView.cellForItem(at: indexPath) as? GBHPhotoCollectionViewCell {
+            cell.tapAnimation()
         }
     }
 
@@ -279,11 +337,17 @@ extension GBHPhotoPickerViewController: UICollectionViewDataSource, UICollection
         if cell == nil {
             cell = GBHPhotoCollectionViewCell()
         }
-
-        // Configure cell with image
-        cell?.configure(picture: self.imageArray[indexPath.row])
-
         return cell!
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        willDisplay cell: UICollectionViewCell,
+                        forItemAt indexPath: IndexPath) {
+
+        if let cell = cell as? GBHPhotoCollectionViewCell {
+            // Configure cell with image
+            cell.configure(picture: self.imageArray[indexPath.row])
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
@@ -306,18 +370,22 @@ extension GBHPhotoPickerViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 10
+        return self.cellSpacing
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        return UIEdgeInsets(top: self.cellSpacing,
+                            left: self.cellSpacing,
+                            bottom: self.cellSpacing,
+                            right: self.cellSpacing)
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 80, height: 80)
+        return CGSize(width: self.cellSize ?? 0,
+                      height: self.cellSize ?? 0)
     }
 }

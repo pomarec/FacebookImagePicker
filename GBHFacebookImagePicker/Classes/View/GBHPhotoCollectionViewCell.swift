@@ -29,8 +29,8 @@ class GBHPhotoCollectionViewCell: UICollectionViewCell {
         // Picture contener
         self.albumImageView = GBHImageAsyncViewLoading(frame: CGRect(x: 0,
                                                                      y: 0,
-                                                                     width: 80,
-                                                                     height: 80))
+                                                                     width: self.frame.width,
+                                                                     height: self.frame.height))
         self.albumImageView?.contentMode = .scaleAspectFill
         self.albumImageView?.clipsToBounds = true
         self.albumImageView?.layer.cornerRadius = GBHFacebookImagePicker.pickerConfig.pictureCornerRadius
@@ -53,7 +53,7 @@ class GBHPhotoCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
 
         // Set default image
-        self.albumImageView?.image = GBHAssetManager.getImage(name: "GBHFacebookImagePickerDefaultImageLoading")
+        self.albumImageView?.image = GBHAssetManager.getImage(name: GBHAssetImage.loader)
     }
 
     /// Required init for deserialization
@@ -67,9 +67,10 @@ class GBHPhotoCollectionViewCell: UICollectionViewCell {
     ///
     /// - Parameter picture: Facebook's image model
     func configure(picture: GBHFacebookImage) {
-
         // Set picture's url
-        if let urlPath = picture.normalSizeUrl,
+        let urlPath = GBHFacebookImagePicker.pickerConfig.uiConfig.previewPhotoSize == .normal
+            ? picture.normalSizeUrl : picture.fullSizeUrl
+        if let urlPath = urlPath,
             let url = URL(string: urlPath) {
             self.albumImageView?.imageUrl = url
         }
@@ -78,6 +79,20 @@ class GBHPhotoCollectionViewCell: UICollectionViewCell {
     override var isSelected: Bool {
         didSet {
             self.selectView.isHidden = !super.isSelected
+        }
+    }
+
+    // MARK: - Tap animation
+
+    func tapAnimation() {
+        let duration = 0.1
+
+        UIView.animate(withDuration: duration, animations: {
+            self.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        }) { _ in
+            UIView.animate(withDuration: duration, animations: {
+                self.transform = CGAffineTransform.identity
+            }, completion: nil)
         }
     }
 }

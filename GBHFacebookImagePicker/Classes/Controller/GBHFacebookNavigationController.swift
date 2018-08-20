@@ -9,6 +9,11 @@ import UIKit
 
 class GBHFacebookNavigationController: UINavigationController {
 
+    // Status bar
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return GBHFacebookImagePicker.pickerConfig.uiConfig.statusbarStyle
+    }
+
     // MARK: - Lifecycle
 
     /// Initialize the navigation controller after didLoad
@@ -18,6 +23,7 @@ class GBHFacebookNavigationController: UINavigationController {
         // Apply barTintColor if specified in config struct 
         if let barTintColor = GBHFacebookImagePicker.pickerConfig.uiConfig.navBarTintColor {
             self.navigationBar.barTintColor = barTintColor
+            self.navigationBar.isTranslucent = false
         }
 
         // Apply tintColor if specified in config struct 
@@ -28,7 +34,7 @@ class GBHFacebookNavigationController: UINavigationController {
         // Apply navigation bar title color if specified in config struct 
         if let tintColor = GBHFacebookImagePicker.pickerConfig.uiConfig.navTitleColor {
             self.navigationBar.titleTextAttributes = [
-                NSForegroundColorAttributeName: tintColor
+                NSAttributedStringKey.foregroundColor: tintColor
             ]
         }
     }
