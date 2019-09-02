@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
             'Images/*.{png}'
         ]
     }
-    s.dependency 'FBSDKCoreKit', '~> 4.37.0'
-    s.dependency 'FBSDKLoginKit', '~> 4.37.0'
+    s.dependency 'FBSDKCoreKit', '~> 5.0.0'
+    s.dependency 'FBSDKLoginKit', '~> 5.0.0'
 end
